@@ -1,30 +1,42 @@
 # Hello World per Magento 1.9
 
 ## Autori
+
 - Acierno Michele <michele.acierno@thinkopen.it>
 - Luca Davide <davide.luca@thinkopen.it>
-- Martina Masto  <martina.masto@thinkopen.it>
+- Masto Martina <martina.masto@thinkopen.it>
+
+## Revisori
+
+- Gugliotti Andre <andre.gugliotti@thinkopen.it>
+
+## Introduzione
 
 Il modulo "Hello World" interagisce in modo basilare con i primi concetti di Magento. Fornisce all'utente tre fronti di interazione:
-- 1.L'amministratore tramite il pannello di configurazione potrà attivare e disattivare il modulo e settare un messaggio di benvenuto.
-- 2.Il messaggio di benvenuto, settato dall'amministratore, verrà visualizzato in tutte le pagine come elemento della colonna destra se fosse presente.
-- 3.Il modulo, tramite il controller, offrirà una pagina di benvenuto nella quale verrà visualizzato il messaggio settato dall'amministratore.In generale, il modulo interagisce sia per quanto riguarda la theme sia per quanto riguarda il pannello di amministrazione. A seguire vedremo come procedere con lo sviluppo di tale modulo e il significato di ogni passo.
 
-* CONFIGURAZIONE 
-* HELPER, CONTROLLER e BLOCK
-* DESIGN e LOCALE
+1. L'amministratore tramite il pannello di configurazione potrà attivare e disattivare il modulo e settare un messaggio di benvenuto.
+2. Il messaggio di benvenuto, settato dall'amministratore, verrà visualizzato in tutte le pagine come elemento della colonna destra se fosse presente.
+3. Il modulo, tramite il controller, offrirà una pagina di benvenuto nella quale verrà visualizzato il messaggio settato dall'amministratore.
 
+In generale, il modulo interagisce sia per quanto riguarda la theme sia per quanto riguarda il pannello di amministrazione. A seguire vedremo come procedere con lo sviluppo di tale modulo e il significato di ogni passo.
 
-##CONFIGURAZIONE
+* [CONFIGURAZIONE](#Configurazione)
+* [HELPER, CONTROLLER e BLOCK](#Helper-Controller-e-Block)
+* [DESIGN e LOCALE](#Design-e-Locale)
 
+## Configurazione
+
+### Archivio di dichiarazione del modulo
+ 
 Per dichiarare un nuovo modulo dobbiamo creare un file xml all'interno della cartella 
 
-    app/etc/modules/{Path_del_modulo.xml}
-
+    app/etc/modules/{Vendor_Module.xml}
 
 Per esempio se avessi un path del tipo Thinkopen, che corrisponde al vendor e Special, il nome del modulo diventerà Thinkopen_Special.xml.
+
 Il file xml sarà composto dal seguente schema:
 
+    <?xml version="1.0" encoding="UTF-8" ?>
     <config>
         <modules>
             <Thinkopen_Special>
@@ -34,23 +46,188 @@ Il file xml sarà composto dal seguente schema:
         </modules>
     </config>
 
-il tag config indica l'inizio dei parametri di configurazione, nella fattispecie andremo a definire i moduli(modules) e nel caso specifico il modulo che stiamo inizializzando. Il tag active e il tag codePool stanno ad indicare rispettivamente lo stato di attivazione del modulo e che tipologia (path) di module è.
+il tag config indica l'inizio dei parametri di configurazione, nella fattispecie andremo a definire i moduli (modules) e nel caso specifico il modulo che stiamo inizializzando. Il tag active e il tag codePool stanno ad indicare rispettivamente lo stato di attivazione del modulo e che tipologia (path) di module è.
 In questo caso stiamo andando ad indicare la locazione del modulo. Ovvero dove quest'ultimo si trova: 
   
-    app/code/local/Thinkopen/Special.
+    app/code/local/Thinkopen/Special
 
-Una volta definito il modulo, magento tenterà di accedere ai file di configurazione di quest'ultimo.
-Partendo dal path definito nel file all'interno di etc/modules, magento ricaverà il path per l'etc del modulo stesso: 
+Una volta definito il modulo, magento tenterà di accedere ai file di configurazione di quest'ultimo. Partendo dal path definito nel file all'interno di _etc/modules_, magento ricaverà il path per l'etc del modulo stesso: 
 
-    app/code/local/Thinkopen/Special/etc.
+    app/code/local/Thinkopen/Special/etc
 
-All'interno di questa cartella magento cercherà i file di configurazione. Nel nostro caso andremo a creare 3 file di configurazione:
-- adminhtml.xml
+All'interno di questa cartella magento cercherà i file di configurazione.
+
+### Archivi di configurazione del modulo
+
+Nel nostro caso andremo a creare 3 file di configurazione:
+
 - config.xml
-- system.xml 
+- system.xml
+- adminhtml.xml
+
+#### config.xml
+
+Il primo file di configurazione rappresenta il cervello, il punto nevralgico del nostro modulo.
+
+Il file config.xml `{Vendor}/{Name}/etc/config.xml` contiene al suo interno le informazioni essenziali che permettono a Magento di comprendere dove si trovano i file, quali siano i permessi relativi al modulo, i valori di default per possibili configurazioni del modulo stesso ed altri particolati. 
+
+Come altri file della cartella etc, oltre alla comune denominazione
+
+    <?xml version="1.0" encoding="UTF-8" ?>
+
+il nostro file di configurazione comincerà con il tag
+
+    <config>
+    ..
+    ...
+    ..
+    </config>
+
+che comunicherà a magento che gli elementi a seguire determineranno la configurazione del modulo in analisi. 
+
+Successivamente andremo a specificare il modulo del quale stiamo parlando, difatti i tag 
+
+    <modules>
+        <thinkopen_special>
+            <version>0.1.0</version>
+        </thinkopen_special>
+    </modules>
+
+indicano in sequenza:
+
+1) I moduli che andremo a trattare 
+2) il tag relativo al modulo di riferimento 
+3) La versione al momento dell'installazione di quest'ultimo
+
+**Best Practice**: E' bene notare come il tag <modules> possa ospitare più di una dichiarazione, volendo potremmo dichiarare multipli moduli con multiple configurazioni. D'altronde questa pratica porterebbe ad una dispersione delle configurazioni le quali sarebbero difficili da reperire, quindi questo comportamento è **ALTAMENTE SCONSIGLIATO**. D'altro canto profilare ogni singolo file di config per i singoli moduli fornirà si una ridondanza maggiore, ma al contempo ci permetterà fasi di manutenzione, analysis e debuggin meno stressanti e complicate (Non dovremo cercare tra i centinai di file quel singolo tag che abbiamo sbagliato a scrivere! Yuppi Yeah!...)
+
+Successivamente il tag
+
+    <global> 
+    .
+    ..
+    .
+    </global>
+
+andrà ad indicare lo scope di riferimento per le prossime dichiarazioni, nello specifico andremo a definire che i tag a seguire sanno condivisi in tutti gli scope di sistema.
+
+Difatti andremo a dichiare alcuni elementi fondamentali per il nostro modulo 
+
+     <global>
+        <helpers>
+            <thinkopen_special>
+                <class>Thinkopen_Special_Helper</class>
+            </thinkopen_special>
+        </helpers>
+        <blocks>
+            <thinkopen_special>
+                <class>Thinkopen_Special_Block</class>
+            </thinkopen_special>
+        </blocks>
+     </global>
 
 
-###adminhtml.xml
+- helpers: gli helpers rappresentano gli "aiutanti" del modulo (come i Model ma più "deboli" per cosi dire), quest'ultimi vengono utilizzati principalmente per interazioni con i dati contenuti dal sistema (attraverso Mage o altri elementi di sistema) fornendo sostegno agli elementi del modulo.
+Nello specifico andremo a dichiarare  una classe che identifica un Helper, difatti la tag class racchiude in sè proprio la classe di riferimento (e il path compresso) dei file php che saranno utilizzati come helper per il modulo.
+
+- blocks: I block rappresentano gli elementi portanti del modulo, quest'ultimo potranno essere structural o content block (o anche ibridi). In questo caso andremo a definire una classe di riferimento che identificherà block per il nostro modulo, allo stesso modo degli helpers il nome specificato nel tag class rappresenta sia il path sia la classe.
+
+
+Come è avvenuto per global ora andremo a definire quelle che sono le configurazioni nello scope (o ambito) di adminhtml, in modo similare a global anche adminihtml necessiterà di una tag apposita per specificare tale operazione
+
+    <adminhtml>
+    .
+    ..
+    .
+    </adminhtml>
+  
+Al suo interno andremo a definire quindi quello che è un file di traduzione per i translate inseriti nei relativi file di configurazione di adminhtml.xml 
+
+**NB.** Per rendere effettive queste modifiche sarà necessario selezionare nella sezione locale del pannello di amministrazione il locale relativo alla lingua prescelta, successivamente spiegheremo come è strutturata la directory locale e come posizionare i relativi file.
+
+Ora dovremo specificare le nostre intenzioni, ovvero selezionare un file di traduzione per il nostro modulo, tali intenzioni si traducono in xml tramite i seguenti tag
+
+       <translate>
+            <modules>
+                <thinkopen_special>
+                    <files>
+                        <default>Thinkopen_Special.csv</default>
+                    </files>
+                </thinkopen_special>
+            </moduls>
+        </translate>
+
+Translate indica l'intenzione di specificare una traduzione e, il tag modules, indica a quali moduli esso è collegato. Infine files e default indicano quali file saranno utilizzati per la traduzione e quali di questi è il file di default per la traduzione. L'utilizzo di un csv è lo standard utilizzato nel nostro caso
+
+Passando oltre abbiamo lo scope frontend, ovvero come il nostro modulo si interfaccerà con il frontend di magento, come prima il tag
+
+    <frontend>
+    .
+    ..
+    .
+    </frontend>
+
+aprirà lo scope di interesse.
+
+Per convenzione quest'ultimo è susseguito dal tag <routers> tramite il quale andremo a specificare, per il nostro modulo, la tipologia di uso che faremo ed il frontName che verrà utilizzato per la generazione delle Urls e altre opzioni
+
+	<routers>
+        <thinkopenspecial>
+            <use>standard</use>
+            <args>
+                <module>Thinkopen_Special</module>
+                <frontName>thinkopenspecial</frontName>
+            </args>
+        </helloworld>
+    </routers>
+
+Il tag module andrà a specificare a quale modulo farà riferimento il frontName che andremo a scrivere, il module segue la logica del codePool selezionato nel file di configurazione all'interno di etc/modules.
+Quindi se per esempio li fosse indicato il codePool: local, allora il path a cui associare il frontName sarà
+
+    thinkopenspecial <--> app/code/local/Thinkopen/Special
+
+Il tag layout andrà a definire, come per gli altri tag di scope, il dominio delle configurazioni che andremo a definire al suo interno. Nello specifico noi andremo a definire un file di configurazione specifico per il layout e tramite il tag updates potremo fare ciò.
+
+	<layout>
+        <updates>
+            <thinkopen_special>
+                <file>thinkopen_special.xml</file>
+            </thinkopen_special>
+        </updates>
+    </layout>
+
+il tag updates indica che è presente un possibile file di aggiuntamento per il layout relativo al nostro modulo 
+
+    <thinkopen_special>
+    .
+    ..
+    .
+    </thinkopen_special>
+
+il path del file <file> verrà calcolato allo stesso modo degli altri path, ovvero tramite il codePool.
+Volendo potremmo specificare un file di traduzione anche per il frontend, i modi e i tag sono identici al procedimento spiegato per la sezione adminhtml, fare riferimento a quella parte della guida per tale procedura.
+
+Infine potremmo voler definire dei valori di default per le configurazioni del nostro modulo. Tale procedura avviene proprio tramite il tag
+
+    <default>
+    .
+    ..
+    .
+    </default>
+
+Quest'ultimo indicherà a Magento dei valori di default che dovrà tenere in considerazione, <thinkopen_special> allo stesso modo indicherà il dominio di riferimento ed infine
+
+    <configuration>
+        <enabled>0</enabled>
+        <message>Custom Message Not Defined</message>
+    </configuration>
+
+andrà a specificare che. per il gruppo configuration, i campi fileds e message avranno valori di default come indicati. 
+
+Al termine del file config.xml, come è giusto che sia, vi sarà il tag di chiusura e, con esso, termina il file di configurazione relativo a config.xml
+
+### adminhtml.xml
+
 Andiamo ad analizzare il file adminhtml.xml
 
     <config>
@@ -79,26 +256,25 @@ Andiamo ad analizzare il file adminhtml.xml
         </acl>
     </config>
 
-
 Questo particolare file di configurazione andrà a determinare la presenza di un nuovo elemento all'interno del pannello di configurazione della sezione admin di magento. Risaliamo passo per passo attraverso la struttura dell'xml per introdurre un nuovo children all'interno del config di sistema.
 Il secondo file di configurazione che andiamo ad analizzare è config.xml
 
-    <config> : Apre la sezione di configurazione del sistema
-    <acl>    : indica lo scope di azione delle configurazioni in atto, nel caso specifico indica che queste configurazioni agiranno a livello di pannello di amministrazione
-    <resources>:
-    <all>: permette di dichiarare i permessi
-    <admin>...<config>: indica il path strutturale da seguire per l'aggiunta di un nuovo elemento nel pannello admin.
-    <children>: indica che il prossimo elemento sarà figlio del precedente, se non fosse presente sarà aggiunto.
-    <thinkopen_special tanslate="title">: indica che un nuovo elemento sarà aggiunto al pannello di amministrazione definito da noi, il titolo sarà soggetto al translate nel tag sottostante <title>
-    <sort_order>: indica l'ordine all'interno della lista. Per convenzione conviene utilizzare un multiplo di 10 affinche non si debbano spostare tutti gli elementi nel momento in cui 2 elementi o più abbiano lo stesso numero
+- config: Apre la sezione di configurazione del sistema
+- acl: indica lo scope di azione delle configurazioni in atto, nel caso specifico indica che queste configurazioni agiranno a livello di pannello di amministrazione
+- resources:
+    - all: permette di dichiarare i permessi
+    - admin...config: indica il path strutturale da seguire per l'aggiunta di un nuovo elemento nel pannello admin.
+    - children: indica che il prossimo elemento sarà figlio del precedente, se non fosse presente sarà aggiunto.
+    - thinkopen_special tanslate="title": indica che un nuovo elemento sarà aggiunto al pannello di amministrazione definito da noi, il titolo sarà soggetto al translate nel tag sottostante title
+    - sort_order: indica l'ordine all'interno della lista. Per convenzione conviene utilizzare un multiplo di 10 affinche non si debbano spostare tutti gli elementi nel momento in cui 2 elementi o più abbiano lo stesso numero
 
+### system.xml
 
+Insieme a adminhtml.xml e config.xml, nella directory etc del modulo abbiamo il file di configurazione system.xml:
 
-
-###System.xml:
-Insieme a adminhtml.xml e config.xml, nella directory etc(METTERE PATH COMPLETO nel code), abbiamo il file di configurazione system.xml:
 Si tratta di un file di configurazione, nello specifico, va a definire una nuova sezione all'interno del menù di configurazione, presente nel pannello amministratore.
-system.xml agisce in system->configuration->general. Troveremo la voce "Hello World" ma l'inserimento di questa voce non è compito di system.xml ma di adminhtml.xml (vedi primo paragrafo), il nostro file invece si occuperà dei dati che ci sono al suo interno. Ovvero della possibilità di abilitare e scrivere un messaggio nel pannello di amministrazione.
+
+system.xml agisce in System -> Configuration :: General. Troveremo la voce "Hello World" ma l'inserimento di questa voce non è compito di system.xml ma di adminhtml.xml (vedi primo paragrafo), il nostro file invece si occuperà dei dati che ci sono al suo interno. Ovvero della possibilità di abilitare e scrivere un messaggio nel pannello di amministrazione.
 
     <?xml version="1.0" ?>
     <config>
@@ -166,172 +342,7 @@ Per capire il compito di questo file analizziamo prima tutte le sue parti.
     <frontend_type>select</frontend_type> significa che il nostro elemento sarà "a tendina" ovvero che potremo scegliere un campo già impostato.
     <source_model>adminhtml/system_config_source_yesno</source_model> indica, in modo specifico, il model di riferimento per il frontend_type.
 
-
-
-###config.xml
-Il secondo file di configurazione rappresenta il cervello, il punto nevralgico del nostro modulo. Il file config.xml ({Vendor}/{Name}/etc/config.xml) contiene al suo interno le informazioni essenziali che permettono a mangento di comprendere dove si trovano i file, quali siano i permessi relativi al modulo, i valori di default per possibili configurazioni del modulo stesso ed altri particolati. 
-
-Come altri file della cartella etc, oltre alla comune denominazione
-
-    <?xml version="1.0" ?>
-
-il nostro file di configurazione comincerà con il tag
-
-    <config>
-    ..
-    ...
-    ..
-    </config>
-
-questo comunicherà a magento che gli elementi a seguire determineranno la configurazione del modulo in analisi. 
-
-Successivamente andremo a specificare il  modulo del quale stiamo parlando, difatti i tag 
-
-    <modules>
-        <thinkopen_special>
-            <version>0.1.0</version>
-        </thinkopen_special>
-    </modules>
-
-indicano in sequenza: 
-1) I moduli che andremo a trattare 
-2) il tag relativo al modulo di riferimento 
-3) La versione al momento dell'installazione di quest'ultimo
-
-Best Practice: E' bene notare come il tag <modules> possa ospitare più di una dichiarazione, volendo potremmo dichiarare multipli moduli con multiple configurazioni. D'altronde questa pratica porterebbe ad una dispersione delle configurazioni le quali sarebbero difficili da reperire, quindi questo comportamento è ALTAMENTE SCONSIGLIATO. D'altro canto profilare ogni singolo file di config per i singoli moduli fornirà si una ridondanza maggiore, ma al contempo ci permetterà fasi di manutenzione, analysis e debuggin meno stressanti e complicate (Non dovremo cercare tra i centinai di file quel singolo tag che abbiamo sbagliato a scrivere! Yuppi Yeah!...)
-
-Successivamente il tag
-
-        <global> 
-        .
-        ..
-        .
-        </global>
-
-andrà ad indicare lo scope di riferimento per le prossime dichiarazioni, nello specifico andremo a definire che i tag a seguire sanno condivisi in tutti gli scope di sistema.
-
-Difatti andremo a dichiare alcuni elementi fondamentali per il nostro modulo 
-
-     <global>
-            <helpers>
-                <thinkopen_special>
-                    <class>Thinkopen_Special_Helper</class>
-                </thinkopen_special>
-            </helpers>
-            <blocks>
-                <thinkopen_special>
-                    <class>Thinkopen_Special_Block</class>
-                </thinkopen_special>
-            </blocks>
-     </global>
-
-
-- helpers: gli helpers rappresentano gli "aiutanti" del modulo (come i Model ma più "deboli" per cosi dire), quest'ultimi vengono utilizzati principalmente per interazioni con i dati contenuti dal sistema (attraverso Mage o altri elementi di sistema) fornendo sostegno agli elementi del modulo.
-Nello specifico andremo a dichiarare  una Classe che identifica un Helper, difatti la tag class racchiude in sè proprio la classe di riferimento (e il path compresso) dei file php che saranno utilizzati come helper per il modulo.
-
-
-
-- blocks: I block rappresentano gli elementi portanti del modulo, quest'ultimo potranno essere structural o content block (O anche ibridi). In questo caso andremo a definire una classe di riferimento che identificherà block per il nostro modulo, allo stesso modo degli helpers il nome specificato nel tag class rappresenta sia il path sia la classe.
-
-
-Come è avvenuto per global ora andremo a definire quelle che sono le configurazioni nello scope (o ambito) di adminhtml, in modo similare a global anche adminihtml necessiterà di una tag apposita per specificare tale operazione
-
-    <adminhtml>
-    .
-    ..
-    .
-    </adminhtml>
-  
-Al suo interno andremo a definire quindi quello che è un file di traduzione per i translate inseriti nei relativi file di configurazione di adminhtml.xml 
-NB. Per rendere effettive queste modifiche sarà necessario selezionare nella sezione locale del pannello di amministrazione il locale relativo alla lingua prescelta, successivamente spiegheremo come è strutturata la directory locale e come posizionare i relativi file.
-
-Ora dovremo specificare le nostre intenzioni, ovvero selezionare un file di traduzione per il nostro modulo, tali intenzioni si traducono in xml tramite i seguenti tag
-
-       <translate>
-            <modules>
-                <thinkopen_special>
-                    <files>
-                        <default>Thinkopen_Special.csv</default>
-                    </files>
-                </thinkopen_special>
-            </moduls>
-        </translate>
-
-
-
-Translate indica l'intenzione di specificare una traduzione e, il tag modules, indica a quali moduli esso è collegato. Infine files e default indicano quali file saranno utilizzati per la traduzione e quali di questi è il file di default per la traduzione. L'utilizzo di un csv è lo standard utilizzato nel nostro caso
-
-Passando oltre abbiamo lo scope frontend, ovvero come il nostro modulo si interfaccerà con il frontend di magento, come prima il tag
-
-    <frontend>
-    .
-    ..
-    .
-    </frontend>
-
-aprirà lo scope di interesse.
-
-Per convenzione quest'ultimo è susseguito dal tag <routers> tramite il quale andremo a specificare, per il nostro modulo, la tipologia di uso che faremo ed il frontName che verrà utilizzato per la generazione delle Urls e altre opzioni
-
-	<routers>
-            <thinkopenspecial>
-                <use>standard</use>
-                <args>
-                    <module>Thinkopen_Special</module>
-                    <frontName>thinkopenspecial</frontName>
-                </args>
-            </helloworld>
-        </routers>
-
-Il tag module andrà a specificare a quale modulo farà riferimento il frontName che andremo a scrivere, il module segue la logica del codePool selezionato nel file di configurazione all'interno di etc/modules.
-Quindi se per esempio li fosse indicato il codePool: local, allora il path a cui associare il frontName sarà
-
-    app/code/local/Thinkopen/Special <--> thinkopenspecial
-
-Il tag layout andrà a definire, come per gli altri tag di scope, il dominio delle configurazioni che andremo a definire al suo interno. Nello specifico noi andremo a definire un file di configurazione specifico per il layout e tramite il tag updates potremo fare ciò.
-
-	<layout>
-            <updates>
-                <thinkopen_spacial>
-                    <file>thinkopen_spacial.xml</file>
-                </thinkopen_spacial>
-            </updates>
-        </layout>
-
-il tag updates indica che è presente un possibile file di aggiuntamento per il layout relativo al nostro modulo 
-
-    <thinkopen_spacial>
-    .
-    ..
-    .
-    </thinkopen_spacial>
-
-il path del file (<file>) verrà calcolato allo stesso modo degli altri path, ovvero tramite il codePool.
-Volendo potremmo specificare un file di traduzione anche per il frontend, i modi e i tag sono identici al procedimento spiegato per la sezione adminhtml, fare riferimento a quella parte della guida per tale procedura.
-
-Infine potremmo voler definire dei valori di default per le configurazioni del nostro modulo. Tale procedura avviene proprio tramite il tag
-
-    <default>
-    .
-    ..
-    .
-    </default>
-
-Quest'ultimo indicherà a Magento dei valori di default che dovrà tenere in considerazione, <thinkopen_special> allo stesso modo indicherà il dominio di riferimento ed infine
-
-            <configuration>
-                <enabled>0</enabled>
-                <message>Custom Message Not Defined</message>
-            </configuration>
-
-andrà a specificare che. per il gruppo configuration, i campi fileds e message avranno valori di default come indicati. 
-
-Al termine del file config.xml, come è giusto che sia, vi sarà il tag di chiusura e, con esso, termina il file di configurazione relativo a config.xml
-
-
-
-##HELPER, CONTROLLER e BLOCK.
-
+## HELPER, CONTROLLER e BLOCK
 
 Nel nostro Modulo Hello World, ora, andremo ad inizializzare e sviluppare i vari elementi dichiarati all'interno del file di configurazione, nello specifico affronteremo per la sezione code/local:
 
@@ -340,8 +351,7 @@ Thinkopen/Special/controllers/IndexController.php
 Thinkopen/Special/Block/Special.php
 
 
-
-###Helper/Data.php: 
+### Helper/Data.php: 
 
 
     <?php
@@ -398,12 +408,7 @@ Thinkopen/Special/Block/Special.php
         }
     }
 
-
-
-
-
-###controllers/IndexController.php
-
+### controllers/IndexController.php
 
     <?php
     /**
@@ -468,10 +473,7 @@ Thinkopen/Special/Block/Special.php
         }
     }
 
-
-
-
-###Block/Thinkopenspecial.php
+### Block/Thinkopenspecial.php
     
     <?php
     /**
@@ -529,9 +531,7 @@ Thinkopen/Special/Block/Special.php
     
     }
 
-
-##DESIGN E LOCALE
-
+## DESIGN E LOCALE
 
 ### /layout/thinkopen_special.xml
 
@@ -615,13 +615,11 @@ da eliminare.
     <remove name="special.side.right"/>
 
 
-NB. Un direttiva specifica avrà una priorità maggiore rispetto ad una direttiva più generale.
+**NB.** Un direttiva specifica avrà una priorità maggiore rispetto ad una direttiva più generale.
 Le modifiche possono essere attuate su vari livelli: 
 Singola Pagina -> Store -> Website 
 
-
-
-###/template/thinkopen_special/content.phtml 
+### /template/thinkopen_special/content.phtml 
 
 Segue un esempio pratico di un file phtml 
 
@@ -634,9 +632,7 @@ Segue un esempio pratico di un file phtml
 Il suo significato è molto semplice: utilizzeremo il template per riempire un determinato block, richiamando i metodi
 definiti dal Block ad esso legato e la condizione di abilitazione per mostrare il messaggio salvato per il nostro modulo. 
 
-
-
-###/template/thinkopen_special/sidebar.phtml 
+### /template/thinkopen_special/sidebar.phtml 
 
     <?php
     if ($this->isEnabled())
@@ -647,13 +643,11 @@ definiti dal Block ad esso legato e la condizione di abilitazione per mostrare i
 
 allo stesso modo sidebar.phtml attua un semplice controllo, prima di mostrare il messaggio salvato per il modulo. 
 
-
-###/app/locale/{Formato_standard}/{Nome_del_Modulo}.csv
+### /app/locale/{Formato_standard}/{Nome_del_Modulo}.csv
 
 Ultimi, ma non ultimi, sono i file di traduzione. Quest'ultimi vengono dichiarati all'interno del file di configurazione (config.xml) e
 fanno riferimento ai translate dei tag xml o alle funzioni esplicite di Magento che definiscono stringhe da tradurre. I file andranno
 collocati nell'apposita cartella di rifetimento secondo il formato stardard e il formato magento.
-
 
 Seguono due esempi
 
@@ -669,5 +663,3 @@ I file csv seguono anche loro lo standard:
 
 Dove il token sarà la stringa, o placeholder, definita nei translate (espliciti o meno) definiti nel modulo, e il value 
 sarà la traduzione associata al token per il locale settato all'interno del pannello di configurazione amministratore.
-
-
