@@ -20,9 +20,10 @@ Il modulo "Hello World" interagisce in modo basilare con i primi concetti di Mag
 
 In generale, il modulo interagisce sia per quanto riguarda la theme sia per quanto riguarda il pannello di amministrazione. A seguire vedremo come procedere con lo sviluppo di tale modulo e il significato di ogni passo.
 
-* [CONFIGURAZIONE](#Configurazione)
-* [HELPER, CONTROLLER e BLOCK](#Helper-Controller-e-Block)
-* [DESIGN e LOCALE](#Design-e-Locale)
+* [CONFIGURAZIONE](#configurazione)
+* [HELPER, CONTROLLER e BLOCK](#helper-controller-e-block)
+* [DESIGN](#design)
+* [LOCALE](#locale)
 
 ## Configurazione
 
@@ -321,85 +322,65 @@ system.xml agisce in System -> Configuration :: General. Troveremo la voce "Hell
 
 Per capire il compito di questo file analizziamo prima tutte le sue parti.
 
-    <?xml version="1.0" ?> linea iniziale per un file xml, indica la versione, a volte è indicata anche da quale tipo di string encode il nostro codice verrà trasformato
-    <config> tag sempre presente se stiamo scrivendo un file di configurazione.
-    <sections> indichiamo che inseriremo una o più sezioni
-    <thinkopen_special module="thinkopen_special" translate="label"> in questo tag indichiamo il nostro modulo, ovvero lo scope nel quale andremo ad agire per l'introduzione della nuova sezione. Translate indica la possibilità di introdurre una traduzione tramite il token specificato in questo tag.
-    <label>Hello World</label> il label, come detto precedentemente, ci permetterà di utilizzare il token per le traduzioni
-    <tab>general</tab> Sotto a quale voce verranno visualizzate le nostre opzioni
-    <sort_order>60</sort_order>Definisce l'ordine dell'elemento all'interno della lista di riferimento. Lo standard Magento suggerisce che quest'ultimo sia un multiplo di dieci in modo tale che anche se ci fossero più elementi con lo stesso numero di sort_order vi saranno nove altre possibilità prima di incappare in uno shift della lista. 
-    
-    <show_in_default>1</show_in_default>
-    <show_in_website>1</show_in_website>
-    <show_in_store>1</show_in_store>
-    questi tre tag indicano a che livello devono essere visibili le nostre modifiche, se abbiamo 1 significa che la modifica è visibile, 0 invece indica invisibile.
-    
-    <groups> Sono possibili accordeon della nostra sezione di configurazione, in questo caso ne abbiamo solo uno ma possono essere anche molti.
-    
-    <fields> Sono i campi che andremo a compilare. 
-    
-    <tooltip>The message will appear on frontend?</tooltip> è un suggerimento, verrà visualizzato se sfioreremo la casella a cui è legato.
-    <frontend_type>select</frontend_type> significa che il nostro elemento sarà "a tendina" ovvero che potremo scegliere un campo già impostato.
-    <source_model>adminhtml/system_config_source_yesno</source_model> indica, in modo specifico, il model di riferimento per il frontend_type.
+- xml version="1.0": linea iniziale per un file xml, indica la versione, a volte è indicata anche da quale tipo di string encode il nostro codice verrà trasformato
+- config: tag sempre presente se stiamo scrivendo un file di configurazione
+- sections: indichiamo che inseriremo una o più sezioni
+- thinkopen_special module="thinkopen_special" translate="label": in questo tag indichiamo il nostro modulo, ovvero lo scope nel quale andremo ad agire per l'introduzione della nuova sezione. Translate indica la possibilità di introdurre una traduzione tramite il token specificato in questo tag.
+- label: il label, come detto precedentemente, ci permetterà di utilizzare il token per le traduzioni
+- tab: sotto a quale voce verranno visualizzate le nostre opzioni
+- sort_order: definisce l'ordine dell'elemento all'interno della lista di riferimento. Lo standard Magento suggerisce che quest'ultimo sia un multiplo di dieci in modo tale che anche se ci fossero più elementi con lo stesso numero di sort_order vi saranno nove altre possibilità prima di incappare in uno shift della lista
+- show_in_default, show_in_website, show_in_store: questi tre tag indicano a che livello devono essere visibili le nostre modifiche, se abbiamo 1 significa che la modifica è visibile, 0 invece indica invisibile
+- groups: Sono possibili accordeon della nostra sezione di configurazione, in questo caso ne abbiamo solo uno ma possono essere anche molti
+- fields: sono i campi che andremo a compilare
+- tooltip: è un suggerimento, verrà visualizzato se sfioreremo la casella a cui è legato
+- frontend_type: significa che il nostro elemento sarà "a tendina" ovvero che potremo scegliere un campo già impostato
+- source_model: indica, in modo specifico, il model di riferimento per il frontend_type.
 
-## HELPER, CONTROLLER e BLOCK
+## Helper, Controller e Block
 
 Nel nostro Modulo Hello World, ora, andremo ad inizializzare e sviluppare i vari elementi dichiarati all'interno del file di configurazione, nello specifico affronteremo per la sezione code/local:
 
-Thinkopen/Special/Helper/Data.php
-Thinkopen/Special/controllers/IndexController.php
-Thinkopen/Special/Block/Special.php
+- Thinkopen/Special/Helper/Data.php
+- Thinkopen/Special/controllers/IndexController.php
+- Thinkopen/Special/Block/Special.php
 
+#### Helper/Data.php: 
 
-### Helper/Data.php: 
+Questo file Data.php rappresenta l'helper standard di Magento. Se non fosse definito esplicitamente alcuna classe Helper Magento farà riferimento e ricercherà automaticamente Data.php.
+
+Da qui è ben comprensibile come sia Best Practice inizializzare, anche se non fosse necessario, Data.php.
+
+Essendo un Helper, Data.php dovrà estendere la classe Mage_Core_Helper_Abstract. Questo avviene per due motivi principali: 
+
+1. Un oggetto di questa classe eredita i metodi del padre, potendo quindi accedere ed utilizzare l'interfaccia e i metodi di Mage_Core_Helper_Abstract
+2. Un oggetto helper ci consente di astrarre le operazioni meno importanti lasciando un codice più snello dove necessario e, di conseguenza, maggiormente manutenibile
 
 
     <?php
     /**
      *  Hello World
-     * 
      */
     
     /**
-     * Class Thinkopen_Special_IndexController
-     *
-     * Questo file .php rappresenta l'helper standard di Magento
-     * Se non fosse definito esplicitamente alcuna classe Helper magento
-     * farà riferimento e ricercherà automaticamente Data.php.
-     * da qui è ben comprensibile come sia Best Practice inizializzare, anche
-     * se non fosse necessario, Data.php
-     *
-     * Essendo un Helper, Data.php dovrà estendere la classe Mage_Core_Helper_Abstract
-     * Questo avviene per due motivi principali: 
-     * 1) Un oggetto di questa classe eredita i metodi del padre, potendo quindi accedere ed 
-     * utilizzare l'interfaccia e i metodi di Mage_Core_Helper_Abstract
-     * 2) Un oggetto helper ci consente di astrarre le operazioni meno importanti lasciando un 
-     * codice più snello dove necessario e, di conseguenza, maggiormente manutenibile
+     * Class Thinkopen_Special_Helper_Data
+     * 
+     * Main Helper.
      * @version 0.1.0
      * @author Think Open <www.thinkopen.it>
      */
     class Thinkopen_Special_Helper_Data extends Mage_Core_Helper_Abstract
     {
         /**
-         * getConfig()
-         *
-         * Tramite Mage.php, e quindi il core di Magento, accediamo ad uno dei metodi 
-         * portanti per ricavare le configurazioni del nostro Modulo, andando a specificare
-         * il path di riferimento del nostro modulo e le configurazioni che ricerchiamo
+         * getConfig
          * @return mixed
          */
         public function getConfig($config)
         {
             return Mage::getStoreConfig("thinkopen_special/".$config);
         }
+        
         /**
-         * isEnabled()
-         *
-         * Tramite Mage.php, e quindi il core di Magento, accediamo ad uno dei metodi 
-         * portanti per ricavare le configurazioni del nostro Modulo, andando a specificare
-         * il path di riferimento del nostro modulo e le configurazioni che ricerchiamo. Nel 
-         * caso specifico noi ricerchiamo la configurazione "enabled" e la restituiamo
-         *
+         * isEnabled
          * @return bool
          */
         public function isEnabled()
@@ -407,64 +388,58 @@ Thinkopen/Special/Block/Special.php
             return $this->getConfig("configuration/enabled");
         }
     }
+    
+In questa classe, abbiamo due metodi:
+
+_getConfig()_
+
+Tramite Mage.php, e quindi il core di Magento, accediamo ad uno dei metodi portanti per ricavare le configurazioni del nostro Modulo, andando a specificare il path di riferimento del nostro modulo e le configurazioni che ricerchiamo.
+
+_isEnabled()_
+
+Tramite Mage.php, e quindi il core di Magento, accediamo ad uno dei metodi portanti per ricavare le configurazioni del nostro Modulo, andando a specificare il path di riferimento del nostro modulo e le configurazioni che ricerchiamo. Nel  caso specifico noi ricerchiamo la configurazione "enabled" e la restituiamo.
 
 ### controllers/IndexController.php
 
+I Controller sono classi che si trovano all'interno della directory /controllers/ del nostro modulo. Quest'ultimi possono essere controller dedicati all'admin o al frontend. Ogni controller andrà  ad estendere la classe di magento Mage_Core_Controller_Front_Action.
+
+Questo comunicherà a magento che la nostra  classe è un controller e che quest'ultima dovrà essere trattata come tale.
+
+Nel nostro caso ci troviamo davanti ad un controller frontend, difatti nel nostro file di configurazione  abbiamo definito un frontName, ricordate? Bene questo frontName sarà necessario per accedere ai nostri controller e, di conseguenza, ai metodi da quest'ultimo esposti.
+
+Magento attua una regola di traduzione dei path come segue: 
+
+    /app/{codePool}/{Vendor}/{Name}/
+    
+Tramite il frontName ed il codePool la generazione dell'URL per le Action esposte avverrà come segue
+
+    Site.com/frontName/class/action
+     
+**NB.** E' giusto tenere in considerazione 2 cose arrivati a questo punto: 
+
+1. Magento, identificando un controller, andrà a rimuovere i  suffissi identificativi e il path della generazione del path, quindi la classe IndexController per il path diverrà Index, al pari il  metodo indexAction diverrà index
+2. Magento, trovandosi in assenza di metodi o classi specifiche, farà sempre riferimento e cercherà l'index, sia per la classe sia per i metodi. Per questo motivo potremmo trovarci ad avere i  seguenti link puntare alla stessa cosa.
+
+`Site.com/frontName
+Site.com/frontName/index
+Site.com/frontName/index/index`
+    
+    
     <?php
     /**
-     * Hello World Blind
+     * Hello World
      */
     
     /**
      * Class Thinkopen_Special_IndexController
      *
-     * I Controller sono classi che si trovano all'interno della directory
-     * /controllers/ del nostro modulo. Quest'ultimi possono essere
-     * controller dedicati all'admin o al frontend. Ogni controller andrà 
-     * ad estendere la classe di magento Mage_Core_Controller_Front_Action.
-     * Questo comunicherà a magento che la nostra  classe è un controller e
-     * che quest'ultima dovrà essere trattata come tale. 
-     * Nel nostro caso ci troviamo davanti ad un controller frontend, 
-     * difatti nel nostro file di configurazione  abbiamo definito un 
-     * frontName, ricordate? Bene questo frontName sarà necessario per 
-     * accedere ai nostri controller e, di conseguenza, ai metodi da 
-     * quest'ultimo esposti. 
-     * Magento attua una regola di traduzione dei path come segue: 
-     * /app/{codePool}/{Vendor}/{Name}/
-     * tramite il frontName ed il codePool la generazione dell'URL per le 
-     * Action esposte avverrà come segue
-     *
-     * Site.com/frontName/class/action
-     * 
-     * NB. E' giusto tenere in considerazione 2 cose arrivati a questo 
-     * punto: 
-     * 1) Magento, identificando un controller, andrà a rimuovere i 
-     * suffissi identificativi e il path della generazione del path, quindi
-     * la classe IndexController per il path diverrà Index, al pari il 
-     * metodo indexAction diverrà index
-     * 2) Magento, trovandosi in assenza di metodi o classi specifiche, 
-     * farà sempre riferimento e cercherà l'index, sia per la classe sia
-     * per i metodi. Per questo motivo potremmo trovarci ad avere i 
-     * seguenti link puntare alla stessa cosa.
-     * 
-     * Site.com/frontName
-     * Site.com/frontName/index
-     * Site.com/frontName/index/index
-     *
      * @version 0.1.0
      * @author Think Open <www.thinkopen.it>
      */
-    
     class Thinkopen_Special_IndexController extends Mage_Core_Controller_Front_Action
     {
         /**
          * Index Action
-         * L'index action sarà la funzione base di riferimento per la 
-         * nostra classe. Quest'ultima andrà a caricare il Layout dichiarato 
-         * nel file di config e, successivamente, renderizzarlo (ovvero mostrarlo
-         * a video) nella pagina. Ricordiamo che questa function corrisponde
-         * ad una vera e propria pagina, riconducibile al triplice path 
-         * precedentemente definiti.
          */
         public function indexAction()
         {
@@ -473,8 +448,20 @@ Thinkopen/Special/Block/Special.php
         }
     }
 
+L'index action sarà la funzione base di riferimento per la nostra classe. Quest'ultima andrà a caricare il Layout dichiarato nel file di config e, successivamente, renderizzarlo (ovvero mostrarlo a video) nella pagina. Ricordiamo che questa function corrispondebad una vera e propria pagina, riconducibile al triplice path precedentemente definiti.
+
 ### Block/Thinkopenspecial.php
-    
+
+I Block rappresentano l'anima dei contenuto, quest'ultimi ci permettono sia di strutturare una pagina sia di fornire i contenuti necessari ai file phtml per rimpire le pagine di riferimento.
+
+I Block sono legati a doppia mandata con i file di layout e template, difatti i file di layout andranno a legare i template ai blocchi.
+
+Nel nostro caso, il block che stiamo andando a definire ci permette di accedere alle configurazioni definite all'interno del file di configurazione tramite i metodi esposti dall'helper.
+
+Vediamo come, tramite una chiamata a magento (Mage::helper(...)) possiamo chiedere a Magento un helper, che abbiamo precedentemente dichiarato nel file di configurazione.
+
+Questo helper ci consentirà di accedere ai file di configurazione, qui potremmo anche modulare in un determinato modo il contenuto e, successivamente, restituirlo ai chiamanti per l'utilizzo.
+
     <?php
     /**
      * Hello World Blind
@@ -483,32 +470,13 @@ Thinkopen/Special/Block/Special.php
     /**
      * Class Thinkopen_Special_Block_Thinkopenspecial
      *
-     * I Block rappresentano l'anima dei contenuto, quest'ultimi
-     * ci permettono sia di strutturare una pagina sia di fornire i contenuti
-     * necessari ai file phtml per rimpire le pagine di riferimento. 
-     * I Block sono legati a doppia mandata con i file di layout e template, difatti
-     * i file di layout andranno a legare i template ai blocchi.
-     * 
-     * Nel nostro caso, il block che stiamo andando a definire ci permette di accedere
-     * alle configurazioni definite all'interno del file di configurazione tramite i 
-     * metodi esposti dall'helper. 
-     * Vediamo come, tramite una chiamata a magento (Mage::helper(...)) possiamo chiedere
-     * a Magento un helper, che abbiamo precedentemente dichiarato nel file di configurazione.
-     * Questo helper ci consentirà di accedere ai file di configurazione, qui potremmo anche 
-     * modulare in un determinato modo il contenuto e, successivamente, restituirlo ai chiamanti
-     * per l'utilizzo. 
-     *
      * @version 0.1.0
      * @author Think Open <www.thinkopen.it>
      */
-    Class Thinkopen_Special_Block_Thinkopenspecial extends Mage_Core_Block_Template
+    class Thinkopen_Special_Block_Thinkopenspecial extends Mage_Core_Block_Template
     {
         /**
          * getMessage
-         *
-         * Tramite Mage richiediamo l'helper dichiarato nel file di configurazione, quest'ultimo
-         * esporrà i metodi ivi definiti
-         * getMessage ritorna quindi il messaggio salvato come configurazione per il modulo.
          * @return mixed
          */
         public function getMessage()
@@ -518,10 +486,6 @@ Thinkopen/Special/Block/Special.php
     
         /**
          * isEnabled
-         *
-         * Tramite Mage richiediamo l'helper dichiarato nel file di configurazione, quest'ultimo
-         * esporrà i metodi ivi definiti
-         * isEnabled ritorna quindi lo status (disattivo o attivo intesi come false o true) salvato come configurazione per il modulo.
          * @return bool
          */
         public function isEnabled()
@@ -531,19 +495,27 @@ Thinkopen/Special/Block/Special.php
     
     }
 
-## DESIGN E LOCALE
+Il nostro block include due metodi:
+
+_getMessage_
+
+Tramite Mage richiediamo l'helper dichiarato nel file di configurazione, quest'ultimo esporrà i metodi ivi definiti. getMessage() ritorna quindi il messaggio salvato come configurazione per il modulo.
+
+_isEnabled_
+
+Tramite Mage richiediamo l'helper dichiarato nel file di configurazione, quest'ultimo esporrà i metodi ivi definiti. isEnabled() ritorna quindi lo status (disattivo o attivo intesi come false o true) salvato come configurazione per il modulo.
+         
+## Design
 
 ### /layout/thinkopen_special.xml
 
-Ora scendiamo più nei particolari del frontend magento. Il file di layout vanno a definire come il modulo influenzi, generi e 
-modifichi le sezioni di magento ed i suoi blocchi. Essendo un file prettamente di definizione grafica e scope di influenza il tag  
-iniziale sarà layout, segue un esempio 
+Ora scendiamo più nei particolari del frontend magento. Il file di layout vanno a definire come il modulo influenzi, generi e modifichi le sezioni di magento ed i suoi blocchi. Essendo un file prettamente di definizione grafica e scope di influenza il tag iniziale sarà layout, segue un esempio 
 
     <?xml version="1.0" encoding="UTF-8" ?>
     <layout>
         <default>
-            <reference name ="right">
-                <block type ="thinkopen_special/special" name="hello.side.right" template="thinkopen_special/sidebar.phtml"/>
+            <reference name="right">
+                <block type="thinkopen_special/special" name="hello.side.right" template="thinkopen_special/sidebar.phtml"/>
             </reference>
         </default>
         <thinkopenspecial_index_index>
@@ -552,18 +524,19 @@ iniziale sarà layout, segue un esempio
                     <template>page/2columns-right.phtml</template>
                 </action>
             </reference>
-            <reference name ="head">
-                <action method="setTitle" translate="title" module="thinkopen_special"><title>Welcome to our hello!</title></action>
+            <reference name="head">
+                <action method="setTitle" translate="title" module="thinkopen_special">
+                    <title>Welcome to our hello!</title>
+                </action>
             </reference>
-            <reference name ="content">
-                <block type ="thinkopen_special/special" name="thinkopenspecial.body.content" template="thinkopen_special/content.phtml"/>
+            <reference name="content">
+                <block type="thinkopen_special/special" name="thinkopenspecial.body.content" template="thinkopen_special/content.phtml"/>
             </reference>
-            <reference name ="right">
-               <remove name="special.side.right"/>
+            <reference name="right">
+                <remove name="special.side.right" />
             </reference>
         </thinkopenspecial_index_index>
     </layout>
-
 
 il nostro tag 
 
@@ -590,69 +563,60 @@ e a livello di singola page definita dal controller del nostro modulo, ovvero
     .
     <thinkopenspecial_index_index>
 
-NB. Come  visto precedentemente il frontName risulta fondamentale, difatti questo tag fa proprio riferimento al nostro
-frontName e definisce dove le modifiche dovranno essere applicate, nello specifico le modiche faranno riferimento al nostro
-controller Index e al metodo Index di quest'ultimo. 
+**NB.** Come  visto precedentemente il frontName risulta fondamentale, difatti questo tag fa proprio riferimento al tag che identifica il nostro router e definisce dove le modifiche dovranno essere applicate, nello specifico le modiche faranno riferimento al nostro IndexController e al metodo indexAction di quest'ultimo. 
 
 	<reference name ="right">
             <block type ="thinkopen_special/special" name="hello.side.right" template="thinkopen_special/sidebar.phtml"/>
         </reference>
 
-Ora cominciamo con le modiche: il tag reference comunica a magento quale elemento della pagina dovremo andare a 
-modificare tramite il parametro name (Ricordiamo che le modifiche verranno attuate sul template base che costituisce la pagina, ad esempio 
-empty, o 2 columns right. Oltretutto se una reference name non fosse presente, ad esempio un template che non presenta la column right, allora
-le modiche NON AVVERRANNO).
+Ora cominciamo con le modiche: il tag reference comunica a magento quale elemento della pagina dovremo andare a modificare tramite il parametro name (Ricordiamo che le modifiche verranno attuate sul template base che costituisce la pagina, ad esempio empty, o 2 columns right. Oltretutto se una reference name non fosse presente, ad esempio un template che non presenta la column right, allora le modiche NON AVVERRANNO).
 
-Il tag block invece andrà a linkare, rispetto alla reference che lo contiene, il Block definito in /app/local/{Vendor}/{ModuleName/Block/{Blocco linkato} con il template che dovrà essere utilizzato per il contenuto. Difatti il tag template definisce proprio un file phtml
-che corrisponde ad un file html con pochi elementi php, il quale può accedere ai metodi del Block linkato e che sostanzialmente fornisce
-le funzioni al template. Importante è definire anche name, UNIVOCI, per i block. Questi fungeranno da identificatori per possibili e 
-future interazioni.  
+Il tag block invece andrà a linkare, rispetto alla reference che lo contiene, il Block definito in /app/local/{Vendor}/{ModuleName}/Block/{BlockName.php} con il template che dovrà essere utilizzato per il contenuto. Difatti il tag template definisce proprio un file phtml che corrisponde ad un file html con pochi elementi PHP, il quale può accedere ai metodi del Block linkato e che sostanzialmente fornisce le funzioni al template.
 
-Speciale menzione va al tag remove. Come detto prima possiamo interagire in più modi con il dominio in esame, volendo potremmo voler rimuovere 
-un elemento dalla pagina (come nella casistica in esame). Ciò sarà possibile semplicemente definendo un remove per il name legato al block
+Importante è definire anche name, UNIVOCI, per i block. Questi fungeranno da identificatori per possibili e future interazioni.  
+
+Speciale menzione va al tag remove. Come detto prima possiamo interagire in più modi con il dominio in esame, volendo potremmo voler rimuovere un elemento dalla pagina (come nella casistica in esame). Ciò sarà possibile semplicemente definendo un remove per il name legato al block
 da eliminare.
 
-    <remove name="special.side.right"/>
+    <remove name="special.side.right" />
 
-
-**NB.** Un direttiva specifica avrà una priorità maggiore rispetto ad una direttiva più generale.
-Le modifiche possono essere attuate su vari livelli: 
+**NB.** Un direttiva specifica avrà una priorità maggiore rispetto ad una direttiva più generale. Le modifiche possono essere attuate su vari livelli: 
 Singola Pagina -> Store -> Website 
 
 ### /template/thinkopen_special/content.phtml 
 
-Segue un esempio pratico di un file phtml 
+Segue un esempio pratico di un file phtml:
 
     <div class="content">
-        <?php  if($this->isEnabled()) : ?>
-        <?php  echo $this->getMessage(); ?>
-        <?php  endif; ?>
+        <?php if($this->isEnabled()) : ?>
+        <p><?php echo $this->getMessage(); ?></p>
+        <?php endif; ?>
     </div>
 
-Il suo significato è molto semplice: utilizzeremo il template per riempire un determinato block, richiamando i metodi
-definiti dal Block ad esso legato e la condizione di abilitazione per mostrare il messaggio salvato per il nostro modulo. 
+Il suo significato è molto semplice: utilizzeremo il template per riempire un determinato block, richiamando i metodi definiti dal block ad esso legato e la condizione di abilitazione per mostrare il messaggio salvato per il nostro modulo. 
 
 ### /template/thinkopen_special/sidebar.phtml 
 
-    <?php
-    if ($this->isEnabled())
-    {
-    echo $this->getMessage();
-    }
-    ?>
+    <?php if ($this->isEnabled()) : ?>
+    <div class="div-block">
+        <span><?php $this->getMessage(); ?></span>
+    </div>
+    <?php endif; ?>
 
 allo stesso modo sidebar.phtml attua un semplice controllo, prima di mostrare il messaggio salvato per il modulo. 
 
-### /app/locale/{Formato_standard}/{Nome_del_Modulo}.csv
+## Locale
 
-Ultimi, ma non ultimi, sono i file di traduzione. Quest'ultimi vengono dichiarati all'interno del file di configurazione (config.xml) e
-fanno riferimento ai translate dei tag xml o alle funzioni esplicite di Magento che definiscono stringhe da tradurre. I file andranno
-collocati nell'apposita cartella di rifetimento secondo il formato stardard e il formato magento.
+### /app/locale/{lingua_PAESE}/{Nome_del_Modulo}.csv
 
-Seguono due esempi
+Ultimi, ma non ultimi, sono i file di traduzione. Quest'ultimi vengono dichiarati all'interno del file di configurazione (config.xml) e fanno riferimento ai translate dei tag xml o alle funzioni esplicite di Magento che definiscono stringhe da tradurre.
+
+I file andranno collocati nell'apposita cartella di rifetimento secondo il formato stardard e il formato magento.
+
+Seguono due esempi:
 
     /app/locale/en_US/Thinkopen_Special.csv
-    /app/locale/it_IS/Thinkopen_Special.csv
+    /app/locale/it_IT/Thinkopen_Special.csv
 
 I file csv seguono anche loro lo standard:
 
@@ -661,5 +625,4 @@ I file csv seguono anche loro lo standard:
     "token3","value3"
     "token4","value4"
 
-Dove il token sarà la stringa, o placeholder, definita nei translate (espliciti o meno) definiti nel modulo, e il value 
-sarà la traduzione associata al token per il locale settato all'interno del pannello di configurazione amministratore.
+Dove il token sarà la stringa, o placeholder, definita nei translate (espliciti o meno) definiti nel modulo, e il value sarà la traduzione associata al token per il locale settato all'interno del pannello di configurazione amministratore.
